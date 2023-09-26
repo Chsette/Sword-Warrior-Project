@@ -89,6 +89,10 @@ public class PlayerBehaviour : MonoBehaviour
     private void HandleAttack(InputAction.CallbackContext inputContext)
     {
         isAttacking = inputContext.ReadValueAsButton();
+        if (isAttacking == true && canAttack == true)
+        {
+            animator.SetTrigger(attackAnimatorHash);
+        }
     }
 
     private void AnimatePlayer()
@@ -110,15 +114,6 @@ public class PlayerBehaviour : MonoBehaviour
         {
             animator.SetBool(isJumpingAnimatorHash, false);
         }
-
-        if(isAttacking == true && canAttack == true)
-        {
-            animator.SetTrigger(attackAnimatorHash);
-        }
-        else if(isAttacking == false)
-        {
-            animator.ResetTrigger(attackAnimatorHash);
-        }
     }
 
     private void GetPlayerComponents()
@@ -139,6 +134,7 @@ public class PlayerBehaviour : MonoBehaviour
         playerControls.Movement.Jump.canceled += HandleJump;
 
         playerControls.Combat.SimpleAttack.started += HandleAttack;
+        playerControls.Combat.SimpleAttack.canceled += HandleAttack;
     }
 
     private void GetAnimatorParametersHash()
