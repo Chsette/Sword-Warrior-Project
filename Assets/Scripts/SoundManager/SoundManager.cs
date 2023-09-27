@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class SoundManager : MonoBehaviour
 {
-    [SerializeField] private AudioClip[] enviromentSound;
+    
     [SerializeField] private float soundVolume = 100;
 
     private static SoundManager instance;
@@ -23,12 +23,7 @@ public class SoundManager : MonoBehaviour
             Destroy(instance.gameObject);
         }
         audioSource = GetComponent<AudioSource>();
-    }
-
-    private void Start()
-    {
-        PlaySoundClip(enviromentSound[0]);
-    }
+    }    
 
     private void Update()
     {
