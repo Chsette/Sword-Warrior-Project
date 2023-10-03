@@ -12,11 +12,13 @@ using UnityEngine.Tilemaps;
 public class PlayerBehaviour : MonoBehaviour
 {
     private PlayerControls playerControls;
+    public static PlayerBehaviour instance;
     #region Private Variables
     #region PlayerComponents
     private Animator animator;
     private Rigidbody2D rigidBody;
     private SpriteRenderer spriteRenderer;
+    private PlayerSounds playerSounds;
     #endregion
 
     #region Movement variables
@@ -45,7 +47,15 @@ public class PlayerBehaviour : MonoBehaviour
 
 
     private void Awake()
-    {        
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
         GetPlayerComponents();
         SetInputParameters();
         GetAnimatorParametersHash();
@@ -83,6 +93,7 @@ public class PlayerBehaviour : MonoBehaviour
             rigidBody.AddForce(Vector2.up * jumpForce);
             canJump = false;
             canAttack = false;
+            playerSounds.PlayJumpSound();
         }
     }
 
@@ -121,6 +132,7 @@ public class PlayerBehaviour : MonoBehaviour
         animator = GetComponent<Animator>();
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        playerSounds = GetComponent<PlayerSounds>();
     }
 
     private void SetInputParameters()
@@ -152,6 +164,11 @@ public class PlayerBehaviour : MonoBehaviour
             canJump = true;
             canAttack = true;
         }
+    }
+
+    public Vector2 GetPlayerPosision()
+    {
+        return transform.position;
     }
     #region OnEnable/Disable Functions   
     private void OnEnable()

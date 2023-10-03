@@ -8,7 +8,7 @@ public class SoundManager : MonoBehaviour
     
     [SerializeField] private float soundVolume = 100;
 
-    private static SoundManager instance;
+    public static SoundManager instance;
 
     private AudioSource audioSource;
 
