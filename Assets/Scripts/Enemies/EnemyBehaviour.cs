@@ -23,7 +23,7 @@ public class EnemyBehaviour : MonoBehaviour
             print("moving to player");
             Vector2 playerPosition = PlayerBehaviour.instance.GetPlayerPosision();
             //Vector2.MoveTowards(transform.position, playerPosition, 0.5f);
-            transform.Translate(new Vector2(playerPosition.x, 0).normalized * velocity * Time.deltaTime * -1);
+            transform.Translate(new Vector2(playerPosition.x, 0).normalized * (velocity * Time.deltaTime * -1));
         }
     }
 

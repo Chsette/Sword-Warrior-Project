@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Animations;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Animator))]
@@ -40,11 +38,16 @@ public class PlayerBehaviour : MonoBehaviour
     #endregion
 #endregion
 
-    #region SerializedField Variables
+    #region SerializeField Variables
     [SerializeField] private float velocity;
     [SerializeField] private float jumpForce;
-    #endregion
 
+    [FormerlySerializedAs("attackPoint")]
+    [Header("Attack Properties")] 
+    [SerializeField] private Transform hitPoint;
+    [SerializeField] private float attackRange;
+    [SerializeField] private LayerMask atttackMask;
+    #endregion
 
     private void Awake()
     {
@@ -66,6 +69,7 @@ public class PlayerBehaviour : MonoBehaviour
         MovePlayer();
         AnimatePlayer();
     }
+    
     private void GetInputInfo(InputAction.CallbackContext inputContext)
     {
         moveDirection.x = inputContext.ReadValue<float>();
@@ -76,13 +80,13 @@ public class PlayerBehaviour : MonoBehaviour
     {
         if(moveDirection.x > 0)
         {
-            spriteRenderer.flipX = false;
+            transform.rotation = new Quaternion(0, 0, 0, 0);
         }
         else if(moveDirection.x < 0)
         {
-            spriteRenderer.flipX = true;
+            transform.rotation = new Quaternion(0, -180, 0, 0);
         }
-        transform.Translate(moveDirection * velocity * Time.deltaTime);
+        transform.Translate(moveDirection * (velocity * Time.deltaTime));
     }
 
     private void HandleJump(InputAction.CallbackContext inputContext)
@@ -170,6 +174,15 @@ public class PlayerBehaviour : MonoBehaviour
     {
         return transform.position;
     }
+
+    private void OnDrawGizmos()
+    {
+        if (hitPoint == null) return;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(hitPoint.position, attackRange);
+    }
+
     #region OnEnable/Disable Functions   
     private void OnEnable()
     {

@@ -221,7 +221,7 @@ GameObject:
   - component: {fileID: 432690442}
   - component: {fileID: 432690441}
   - component: {fileID: 432690446}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: '[Enemy] Crab'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -402,7 +402,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movePosition: {x: 0, y: 0}
   velocity: 1.5
-  distanceThreshold: 2
+  distanceThreshold: 4
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1432,6 +1432,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocity: 10
   jumpForce: 500
+  hitPoint: {fileID: 1619950592}
+  attackRange: 0.5
+  atttackMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!50 &836857480
 Rigidbody2D:
   serializedVersion: 4
@@ -1522,7 +1527,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: -3318188226485093758, guid: ae72133dacba6ec4eb33ecde48f50e56, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9528302, g: 0.9528302, b: 0.9528302, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1543,7 +1548,8 @@ Transform:
   m_LocalPosition: {x: -4.83, y: -3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1619950592}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1579,8 +1585,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.32331347, y: -0.19381475}
-  m_Size: {x: 0.8047538, y: 1.4795346}
+  m_Offset: {x: 0.008782625, y: 0.009132862}
+  m_Size: {x: 0.78015375, y: 1.4918346}
   m_Direction: 0
 --- !u!114 &836857485
 MonoBehaviour:
@@ -2692,6 +2698,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1619950591
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1619950592}
+  m_Layer: 0
+  m_Name: HitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1619950592
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619950591}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.78, y: -0.02, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 836857483}
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1871585722
 GameObject:
