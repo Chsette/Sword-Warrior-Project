@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
+using Collider2D = UnityEngine.Collider2D;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -12,12 +14,12 @@ using UnityEngine.Tilemaps;
 public class PlayerBehaviour : MonoBehaviour
 {
     private PlayerControls playerControls;
-    public static PlayerBehaviour instance;
+    public static PlayerBehaviour Instance;
+
     #region Private Variables
     #region PlayerComponents
     private Animator animator;
     private Rigidbody2D rigidBody;
-    private SpriteRenderer spriteRenderer;
     private PlayerSounds playerSounds;
     #endregion
 
@@ -28,7 +30,7 @@ public class PlayerBehaviour : MonoBehaviour
     private bool canJump;
     #endregion
 
-    #region Combat
+    #region Combat variables
     private bool canAttack;
     private bool isAttacking;
     #endregion
@@ -38,24 +40,30 @@ public class PlayerBehaviour : MonoBehaviour
     private int isJumpingAnimatorHash;
     private int attackAnimatorHash;
     #endregion
-#endregion
-
-    #region SerializedField Variables
-    [SerializeField] private float velocity;
-    [SerializeField] private float jumpForce;
     #endregion
 
+    #region SerializedField Variables
 
+    [SerializeField] private float velocity;
+    [SerializeField] private float jumpForce;
+
+    [Header("Attack properties")] 
+    [SerializeField] private Transform hitPoint;
+    [SerializeField] private float attackRange;
+    [SerializeField] private LayerMask attackMask;
+    #endregion
+    
     private void Awake()
     {
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = this;
+            Instance = this;
         }
         else
         {
             Destroy(this.gameObject);
         }
+
         GetPlayerComponents();
         SetInputParameters();
         GetAnimatorParametersHash();
@@ -66,29 +74,27 @@ public class PlayerBehaviour : MonoBehaviour
         MovePlayer();
         AnimatePlayer();
     }
-    private void GetInputInfo(InputAction.CallbackContext inputContext)
-    {
-        moveDirection.x = inputContext.ReadValue<float>();
-        isMoving = moveDirection.x != 0;
-    }
 
     private void MovePlayer()
     {
-        if(moveDirection.x > 0)
+        if (moveDirection.x > 0)
         {
-            spriteRenderer.flipX = false;
+            transform.rotation = quaternion.identity;
         }
-        else if(moveDirection.x < 0)
+        else if (moveDirection.x < 0)
         {
-            spriteRenderer.flipX = true;
+            transform.rotation = new Quaternion(0, -180, 0, 0);
         }
-        transform.Translate(moveDirection * velocity * Time.deltaTime);
+
+        moveDirection.x = playerControls.Movement.Move.ReadValue<float>();
+        rigidBody.velocity = moveDirection * velocity;
+        isMoving = moveDirection.x != 0;
     }
 
     private void HandleJump(InputAction.CallbackContext inputContext)
     {
         isJumping = inputContext.ReadValueAsButton();
-        if(isJumping == true && canJump == true)
+        if (isJumping == true && canJump == true)
         {
             rigidBody.AddForce(Vector2.up * jumpForce);
             canJump = false;
@@ -106,22 +112,34 @@ public class PlayerBehaviour : MonoBehaviour
         }
     }
 
+    private void AttackHandler()
+    {
+        Collider2D[] hittedEnemies = Physics2D.OverlapCircleAll(hitPoint.position, attackRange, attackMask);
+
+        foreach (Collider2D hittedEnemie in hittedEnemies)
+        {
+            if (hittedEnemie.GetComponent<EnemyBehaviour>())
+            {
+                Destroy(hittedEnemie.gameObject);
+            }
+        }
+    }
     private void AnimatePlayer()
     {
         if (isMoving && animator.GetBool(isMovingAnimatorHash) == false)
         {
             animator.SetBool(isMovingAnimatorHash, true);
         }
-        else if(isMoving == false &&  animator.GetBool(isMovingAnimatorHash) == true)
+        else if (isMoving == false && animator.GetBool(isMovingAnimatorHash) == true)
         {
             animator.SetBool(isMovingAnimatorHash, false);
         }
 
-        if(isJumping == true && animator.GetBool(isJumpingAnimatorHash) == false)
+        if (isJumping == true && animator.GetBool(isJumpingAnimatorHash) == false)
         {
             animator.SetBool(isJumpingAnimatorHash, true);
         }
-        else if(animator.GetBool(isJumpingAnimatorHash) == true && isJumping == false && canJump == true)
+        else if (animator.GetBool(isJumpingAnimatorHash) == true && isJumping == false && canJump == true)
         {
             animator.SetBool(isJumpingAnimatorHash, false);
         }
@@ -131,16 +149,12 @@ public class PlayerBehaviour : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         rigidBody = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
         playerSounds = GetComponent<PlayerSounds>();
     }
 
     private void SetInputParameters()
     {
         playerControls = new PlayerControls();
-        playerControls.Movement.Move.started += GetInputInfo;
-        playerControls.Movement.Move.performed += GetInputInfo;
-        playerControls.Movement.Move.canceled += GetInputInfo;
 
         playerControls.Movement.Jump.started += HandleJump;
         playerControls.Movement.Jump.canceled += HandleJump;
@@ -158,19 +172,20 @@ public class PlayerBehaviour : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        TilemapRenderer tileRenderer = collision.collider.GetComponent<TilemapRenderer>();
-        if(tileRenderer.sortingLayerName == "Enviroment")
+        
+        if (collision.collider.CompareTag("Floor"))
         {
             canJump = true;
             canAttack = true;
         }
     }
 
-    public Vector2 GetPlayerPosision()
+    public Vector2 GetPlayerPosition()
     {
         return transform.position;
     }
-    #region OnEnable/Disable Functions   
+
+    #region OnEnable/Disable Functions
     private void OnEnable()
     {
         playerControls.Enable();
@@ -178,10 +193,20 @@ public class PlayerBehaviour : MonoBehaviour
 
     private void OnDisable()
     {
-        playerControls.Movement.Move.started -= GetInputInfo;
-        playerControls.Movement.Move.performed -= GetInputInfo;
-        playerControls.Movement.Move.canceled -= GetInputInfo;
-        playerControls.Disable();  
+        playerControls.Movement.Jump.started -= HandleJump;
+        playerControls.Movement.Jump.canceled -= HandleJump;
+
+        playerControls.Combat.SimpleAttack.started -= HandleAttack;
+        playerControls.Combat.SimpleAttack.canceled -= HandleAttack;
+        playerControls.Disable();
     }
+
     #endregion
+    
+    // private void OnDrawGizmos()
+    // {
+    //     if (hitPoint == null) return;
+    //     Gizmos.color = Color.red;
+    //     Gizmos.DrawWireSphere(hitPoint.position, attackRange);
+    // }
 }
