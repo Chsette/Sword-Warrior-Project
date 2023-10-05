@@ -19,7 +19,7 @@ public class EnemyBehaviour : MonoBehaviour
         float distanceFromPlayer = Vector2.Distance(transform.position, PlayerBehaviour.Instance.GetPlayerPosition());
         if (distanceFromPlayer <= distanceThreshold)
         {
-            print("moving to player");
+            //print("moving to player");
             Vector2 playerPosition = PlayerBehaviour.Instance.GetPlayerPosition();
             //Vector2.MoveTowards(transform.position, playerPosition, 0.5f);
             transform.Translate(new Vector2(playerPosition.x, 0).normalized * velocity * Time.deltaTime * -1);

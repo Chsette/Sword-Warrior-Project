@@ -6,7 +6,7 @@ using UnityEngine;
 public class SoundManager : MonoBehaviour
 {
     
-    [SerializeField] private float soundVolume = 100;
+    [SerializeField, Range(0f, 100f)] private float soundVolume = 100;
 
     public static SoundManager instance;
 

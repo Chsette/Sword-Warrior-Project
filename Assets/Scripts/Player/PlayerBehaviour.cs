@@ -8,6 +8,13 @@ using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 using Collider2D = UnityEngine.Collider2D;
 
+public enum playerstate
+{
+    live,
+    idle,
+    dead
+}
+
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -51,6 +58,7 @@ public class PlayerBehaviour : MonoBehaviour
     [SerializeField] private Transform hitPoint;
     [SerializeField] private float attackRange;
     [SerializeField] private LayerMask attackMask;
+    private playerstate playerstate;
     #endregion
     
     private void Awake()
@@ -77,6 +85,8 @@ public class PlayerBehaviour : MonoBehaviour
 
     private void MovePlayer()
     {
+        if (moveDirection == null) return;
+
         if (moveDirection.x > 0)
         {
             transform.rotation = quaternion.identity;
@@ -115,7 +125,7 @@ public class PlayerBehaviour : MonoBehaviour
     private void AttackHandler()
     {
         Collider2D[] hittedEnemies = Physics2D.OverlapCircleAll(hitPoint.position, attackRange, attackMask);
-
+        print($"Hitted {hittedEnemies.Length} enemies and killed them");
         foreach (Collider2D hittedEnemie in hittedEnemies)
         {
             if (hittedEnemie.GetComponent<EnemyBehaviour>())
@@ -202,11 +212,11 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     #endregion
-    
-    // private void OnDrawGizmos()
-    // {
-    //     if (hitPoint == null) return;
-    //     Gizmos.color = Color.red;
-    //     Gizmos.DrawWireSphere(hitPoint.position, attackRange);
-    // }
+
+    private void OnDrawGizmos()
+    {
+        if (hitPoint == null) return;
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(hitPoint.position, attackRange);
+    }
 }
