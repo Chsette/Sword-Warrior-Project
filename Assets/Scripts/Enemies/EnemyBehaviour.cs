@@ -1,20 +1,22 @@
+using System;
 using System.Collections;
 using UnityEngine;
 public class EnemyBehaviour : MonoBehaviour
 {
-    [SerializeField] private Vector2 movePosition;
     [SerializeField, Range(0f, 10f)] private float velocity;
     [SerializeField] private float distanceThreshold;
     [SerializeField] private AudioClip[] enemySounds;
 
     private Rigidbody2D rigidbody;
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private AudioSource audioSource;
 
     private void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
     }
 
@@ -25,13 +27,28 @@ public class EnemyBehaviour : MonoBehaviour
         {
             SetIsMovingAnimParameter(true);
             Vector2 playerPosition = PlayerBehaviour.Instance.GetPlayerPosition();
-            //Vector2.MoveTowards(transform.position, playerPosition, 0.5f);
-            transform.Translate(new Vector2(playerPosition.x, 0).normalized * velocity * Time.deltaTime * -1);
+            transform.position = Vector2.MoveTowards(transform.position, playerPosition, velocity * Time.deltaTime);
+            print("enemy move: " + transform.position.magnitude);
         }
 
         if (rigidbody.velocity.magnitude == 0)
         {
             SetIsMovingAnimParameter(false);
+        }
+
+        CheckEnemySprite();
+        print("enemy sprite velocity: " + rigidbody.velocity.x);
+    }
+
+    private void CheckEnemySprite()
+    {
+        if (rigidbody.velocity.normalized.x < 0)
+        {
+            spriteRenderer.flipX = true;
+        }
+        else if (rigidbody.velocity.x > 0)
+        {
+            spriteRenderer.flipX = false;
         }
     }
 
