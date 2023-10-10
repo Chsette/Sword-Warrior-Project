@@ -1,25 +1,14 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Animations;
 using UnityEngine.InputSystem;
-using UnityEngine.Tilemaps;
 using Collider2D = UnityEngine.Collider2D;
-
-public enum playerstate
-{
-    live,
-    idle,
-    dead
-}
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 public class PlayerBehaviour : MonoBehaviour
 {
+    private const float gravityValue = -9.81f;
     private PlayerControls playerControls;
     public static PlayerBehaviour Instance;
 
@@ -32,6 +21,7 @@ public class PlayerBehaviour : MonoBehaviour
 
     #region Movement variables
     private Vector2 moveDirection;
+    private float initialGravityScale;
     private bool isMoving;
     private bool isJumping;
     private bool canJump;
@@ -50,15 +40,18 @@ public class PlayerBehaviour : MonoBehaviour
     #endregion
 
     #region SerializedField Variables
-
     [SerializeField] private float velocity;
+
+    [Header("Jump properties")]
     [SerializeField] private float jumpForce;
+    [SerializeField] private float jumpFallGravityScale = 3f;
+    [SerializeField] private Transform groundCheckPos;
+    [SerializeField] private LayerMask groundLayer;
 
     [Header("Attack properties")] 
     [SerializeField] private Transform hitPoint;
     [SerializeField] private float attackRange;
     [SerializeField] private LayerMask attackMask;
-    private playerstate playerstate;
     #endregion
     
     private void Awake()
@@ -75,12 +68,15 @@ public class PlayerBehaviour : MonoBehaviour
         GetPlayerComponents();
         SetInputParameters();
         GetAnimatorParametersHash();
+
+        initialGravityScale = rigidBody.gravityScale;
     }
 
     private void Update()
     {
         MovePlayer();
         AnimatePlayer();
+        GravityHandler();
     }
 
     private void MovePlayer()
@@ -97,16 +93,17 @@ public class PlayerBehaviour : MonoBehaviour
         }
 
         moveDirection.x = playerControls.Movement.Move.ReadValue<float>();
-        rigidBody.velocity = moveDirection * velocity;
+        rigidBody.velocity = new Vector2(moveDirection.x, 0) * velocity;
         isMoving = moveDirection.x != 0;
     }
 
     private void HandleJump(InputAction.CallbackContext inputContext)
     {
         isJumping = inputContext.ReadValueAsButton();
+        print(IsGrounded());
         if (isJumping == true && canJump == true)
         {
-            rigidBody.AddForce(Vector2.up * jumpForce);
+            rigidBody.velocity += Vector2.up * jumpForce;
             canJump = false;
             canAttack = false;
             playerSounds.PlayJumpSound();
@@ -130,10 +127,11 @@ public class PlayerBehaviour : MonoBehaviour
         {
             if (hittedEnemie.GetComponent<EnemyBehaviour>())
             {
-                Destroy(hittedEnemie.gameObject);
+                hittedEnemie.GetComponent<EnemyBehaviour>().PlayDeathSound();
             }
         }
     }
+
     private void AnimatePlayer()
     {
         if (isMoving && animator.GetBool(isMovingAnimatorHash) == false)
@@ -181,8 +179,7 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
-    {
-        
+    {        
         if (collision.collider.CompareTag("Floor"))
         {
             canJump = true;
@@ -193,6 +190,19 @@ public class PlayerBehaviour : MonoBehaviour
     public Vector2 GetPlayerPosition()
     {
         return transform.position;
+    }
+
+    private bool IsGrounded()
+    {
+        Collider2D[] hittedThings = Physics2D.OverlapCircleAll(groundCheckPos.position, 0.1f, groundLayer);
+        foreach (Collider2D thing in hittedThings)
+        {
+            if (thing.gameObject.layer == groundLayer)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     #region OnEnable/Disable Functions
@@ -212,6 +222,11 @@ public class PlayerBehaviour : MonoBehaviour
     }
 
     #endregion
+
+    private void GravityHandler()
+    {
+        
+    }
 
     private void OnDrawGizmos()
     {
