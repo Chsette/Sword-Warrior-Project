@@ -44,7 +44,8 @@ public class PlayerBehaviour : MonoBehaviour
 
     [Header("Jump properties")]
     [SerializeField] private float jumpForce;
-    [FormerlySerializedAs("jumpFallGravityScale")] [SerializeField] private float jumpFallGravityMultiplier = 3f;
+    [FormerlySerializedAs("jumpFallGravityScale")] 
+    [SerializeField, Range(1f, 10f)] private float jumpFallGravityMultiplier = 3f;
     [SerializeField] private Transform groundCheckPos;
     [SerializeField] private LayerMask groundLayer;
 
@@ -77,7 +78,6 @@ public class PlayerBehaviour : MonoBehaviour
         MovePlayer();
         AnimatePlayer();
         GravityHandler();
-        print("Fall velocity: " + rigidBody.velocity.y);
     }
 
     private void MovePlayer()
@@ -94,14 +94,12 @@ public class PlayerBehaviour : MonoBehaviour
         }
 
         moveDirection.x = playerControls.Movement.Move.ReadValue<float>();
-        //rigidBody.velocity = moveDirection * velocity;
         rigidBody.velocity = new Vector2(moveDirection.x * velocity, rigidBody.velocity.y);
         isMoving = moveDirection.x != 0;
     }
 
     private void HandleJump(InputAction.CallbackContext inputContext)
     {
-        print(IsGrounded());
         if (IsGrounded())
         {
             rigidBody.velocity += Vector2.up * jumpForce;
@@ -143,11 +141,11 @@ public class PlayerBehaviour : MonoBehaviour
             animator.SetBool(isMovingAnimatorHash, false);
         }
 
-        if (isJumping == true && animator.GetBool(isJumpingAnimatorHash) == false)
+        if (!IsGrounded() && animator.GetBool(isJumpingAnimatorHash) == false)
         {
             animator.SetBool(isJumpingAnimatorHash, true);
         }
-        else if (animator.GetBool(isJumpingAnimatorHash) == true && !IsGrounded())
+        else if (animator.GetBool(isJumpingAnimatorHash) == true && IsGrounded())
         {
             animator.SetBool(isJumpingAnimatorHash, false);
         }
@@ -183,10 +181,24 @@ public class PlayerBehaviour : MonoBehaviour
         return transform.position;
     }
 
-    private bool IsGrounded()
+    private void GravityHandler()
     {
-        bool isGrounded = Physics2D.OverlapBox(groundCheckPos.position, new Vector3(1, 0.2f), groundLayer);
-        return isGrounded;
+        if (IsGrounded())
+        {
+            isJumping = false;
+            canAttack = true;
+            rigidBody.gravityScale = initialGravityScale;
+        }
+        else if (isJumping && rigidBody.velocity.y < 0f)
+        {
+            print("increasing gravity velocity");
+            isJumping = true;
+            rigidBody.gravityScale = initialGravityScale * jumpFallGravityMultiplier;
+        }
+        else
+        {
+            isJumping = true;
+        }
     }
 
     #region OnEnable/Disable Functions
@@ -207,24 +219,10 @@ public class PlayerBehaviour : MonoBehaviour
 
     #endregion
 
-    private void GravityHandler()
+    private bool IsGrounded()
     {
-        print("is jumping ");
-        if (IsGrounded())
-        {
-            isJumping = false;
-            canAttack = true;
-        }
-        else if (isJumping && rigidBody.velocity.y < 0f)
-        {
-            print("increasing velocity");
-            rigidBody.gravityScale = initialGravityScale * jumpFallGravityMultiplier;
-        }
-        else
-        {
-            canAttack = false;
-            rigidBody.gravityScale = initialGravityScale;
-        }
+        bool isGrounded = Physics2D.OverlapBox(groundCheckPos.position, new Vector2(1, 0.2f), groundLayer);
+        return isGrounded;
     }
 
     private void OnDrawGizmos()
@@ -232,6 +230,7 @@ public class PlayerBehaviour : MonoBehaviour
         if (hitPoint == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(hitPoint.position, attackRange);
+        Gizmos.color = Color.green;
         Gizmos.DrawWireCube(groundCheckPos.position, new Vector3(1, 0.2f));
     }
 }

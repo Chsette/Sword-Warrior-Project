@@ -12,6 +12,8 @@ public class EnemyBehaviour : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private AudioSource audioSource;
 
+    private Vector2 playerPosition;
+
     private void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -26,9 +28,8 @@ public class EnemyBehaviour : MonoBehaviour
         if (distanceFromPlayer <= distanceThreshold)
         {
             SetIsMovingAnimParameter(true);
-            Vector2 playerPosition = PlayerBehaviour.Instance.GetPlayerPosition();
+            playerPosition = PlayerBehaviour.Instance.GetPlayerPosition();
             transform.position = Vector2.MoveTowards(transform.position, playerPosition, velocity * Time.deltaTime);
-            print("enemy move: " + transform.position.magnitude);
         }
 
         if (rigidbody.velocity.magnitude == 0)
@@ -42,24 +43,19 @@ public class EnemyBehaviour : MonoBehaviour
 
     private void CheckEnemySprite()
     {
-        if (rigidbody.velocity.normalized.x < 0)
-        {
-            spriteRenderer.flipX = true;
-        }
-        else if (rigidbody.velocity.x > 0)
+        if (transform.position.x - playerPosition.x > 0)
         {
             spriteRenderer.flipX = false;
+        }
+        else if (transform.position.x - playerPosition.x < 0)
+        {
+            spriteRenderer.flipX = true;
         }
     }
 
     private void SetIsMovingAnimParameter(bool isMoving)
     {
         animator.SetBool("isMoving", isMoving);
-    }
-
-    private void StartDeathAnim()
-    {
-        animator.SetTrigger("onDeath");
     }
 
     private void PlayWalkSound()
@@ -82,5 +78,10 @@ public class EnemyBehaviour : MonoBehaviour
     {
         yield return new WaitForSeconds(0.35f);
         Destroy(this.gameObject);
+    }
+
+    private void StartDeathAnim()
+    {
+        animator.SetTrigger("onDeath");
     }
 }

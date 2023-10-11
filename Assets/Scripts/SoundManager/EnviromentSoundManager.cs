@@ -11,6 +11,7 @@ public class EnviromentSoundManager : MonoBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(this.gameObject);
         audioSource = GetComponent<AudioSource>();
         audioSource.clip = enviromentSound[0];
         audioSource.Play();
