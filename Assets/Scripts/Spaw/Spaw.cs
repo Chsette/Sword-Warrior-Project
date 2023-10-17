@@ -36,4 +36,13 @@ public class Spawn : MonoBehaviour
             currentTime = timeSpawn;
         }
     }
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        // Verifique se o objeto que colidiu é o jogador
+        if (other.CompareTag("Player"))
+        {
+            // Se for o jogador, destrua o slime
+            Destroy(gameObject);
+        }
+    }
 }
