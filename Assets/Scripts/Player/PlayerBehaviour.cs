@@ -2,6 +2,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 using Collider2D = UnityEngine.Collider2D;
 
 [RequireComponent(typeof(Animator))]
@@ -12,6 +13,7 @@ public class PlayerBehaviour : MonoBehaviour
     private const float gravityValue = -9.81f;
     private PlayerControls playerControls;
     public static PlayerBehaviour Instance;
+    public Text scoreText;
 
     #region Private Variables
     #region PlayerComponents
